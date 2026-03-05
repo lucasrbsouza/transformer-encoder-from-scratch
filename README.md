@@ -1,24 +1,45 @@
-# Transformer Encoder "From Scratch"
+# Construindo o Transformer Encoder "From Scratch"
 
-Implementação educacional da passagem direta (Forward Pass) de um bloco Encoder do Transformer, baseado no artigo *"Attention Is All You Need"* (Vaswani et al., 2017).
+**Instituição:** iCEV - Instituto de Ensino Superior  
+**Disciplina:** Tópicos em Inteligência Artificial – 2026.1  
+**Professor:** Prof. Dimmy Magalhães  
+**Aluno:** José Lucas Silva Souza
 
-## 📋 Descrição
+---
 
-Este projeto demonstra os mecanismos internos de um Encoder Transformer implementados inteiramente em **Python e NumPy**, sem dependências de frameworks de Deep Learning como PyTorch ou TensorFlow.
+## 🎯 Objetivo do Laboratório
 
-O foco é na compreensão prática de:
+Este repositório contém a implementação da passagem direta (*Forward Pass*) de um bloco Encoder completo do modelo Transformer, baseado no artigo *"Attention Is All You Need"* (Vaswani et al., 2017).
+
+O objetivo principal é demonstrar o funcionamento interno das:
 - Multiplicações de matrizes em redes neurais
-- Projeções lineares (Query, Key, Value)
-- Mecanismo de atenção (Attention)
-- Normalização de camadas (Layer Normalization)
+- Projeções (*Query*, *Key*, *Value*)
+- Atenção (*Scaled Dot-Product Attention*)
+- Normalizações (*Layer Normalization*)
 
-## 🔧 Requisitos
+Para focar no motor matemático, o projeto foi desenvolvido **estritamente com** `Python 3.11`, `NumPy` e `Pandas`, **sem** utilização de frameworks de Deep Learning como PyTorch, TensorFlow ou Keras.
 
-- Python 3.10+
+---
+
+## 🏗️ Arquitetura do Projeto
+
+O código foi estruturado seguindo princípios de **Clean Architecture**, **SOLID** e **Domain-Driven Design (DDD)**, separando claramente as lógicas de domínio das operações de infraestrutura:
+
+- **`src/domain/`** - Contém as regras de negócio e a matemática pura do modelo (Atenção, FFN, LayerNorm, etc.)
+- **`src/infrastructure/`** - Lida com a simulação da tabela de Embeddings e inicialização de pesos
+- **`src/main.py`** - Ponto de entrada que orquestra o fluxo de dados e valida os tensores
+
+---
+
+## 📋 Requisitos
+
+- Python 3.8+
 - NumPy
 - Pandas
 
-## 🚀 Como executar
+---
+
+## 🚀 Como Executar
 
 ### 1. Clone o repositório
 
@@ -27,129 +48,56 @@ git clone https://github.com/lucasrbsouza/transformer-encoder-from-scratch.git
 cd transformer-encoder-from-scratch
 ```
 
-### 2. Instale as dependências
+### 2. Crie um ambiente virtual (Opcional)
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# ou
+venv\Scripts\activate     # Windows
+```
+
+### 3. Instale as dependências
 
 ```bash
 pip install numpy pandas
 ```
 
-### 3. Execute o programa
+### 4. Execute o programa
 
 ```bash
 python src/main.py
 ```
 
-## 📁 Estrutura do Projeto
+### ✅ Saída Esperada
+
+Ao executar o código, o sistema processará a frase `"o banco bloqueou cartao"` através de N=6 camadas do Encoder. O console exibirá a validação de que as dimensões do tensor se mantêm consistentes `(Batch, Tokens, d_model)` do início ao fim do processamento:
 
 ```
-transformer-encoder-from-scratch/
-├── README.md
-├── src/
-│   ├── main.py                          # Ponto de entrada principal
-│   ├── domain/
-│   │   ├── __init__.py
-│   │   ├── vocabulary.py                # Gerenciamento de vocabulário
-│   │   ├── attention.py                 # Mecanismo de Atenção
-│   │   └── layer_norm.py                # Normalização de Camadas
-│   └── infrastructure/
-│       ├── __init__.py
-│       └── embeddings.py                # Implementação de Embeddings
+Frase original: 'o banco bloqueou cartao'
+Camadas processadas: 6
+Shape de Entrada (X): (1, 4, 64)
+Shape de Saída (Z): (1, 4, 64)
+
+Validação de Sanidade Passou? Sim
 ```
 
-## 📚 Conceitos Implementados
+---
 
-- **Multi-Head Attention**: Mecanismo de atenção com múltiplas cabeças
-- **Feed Forward Network**: Rede completamente conectada com ativação ReLU
-- **Layer Normalization**: Normalização de camadas para estabilidade
-- **Positional Encoding**: Codificação posicional das sequências
+## 📝 Nota de Integridade e Créditos
 
-## 🔧 Componentes Principais
+Em conformidade com o Contrato Pedagógico da disciplina, declaro que este projeto foi desenvolvido utilizando os conceitos lecionados em sala.
 
-### `ScaledDotProductAttention` (domain/attention.py)
-
-Implementa o mecanismo de atenção em escala com produto ponderado:
-
-```
-Attention(Q, K, V) = softmax(QK^T / √d_model) * V
-```
-
-**Características:**
-- Projeções lineares para Query, Key e Value
-- Estabilização numérica do softmax (subtração de máximo)
-- Inicialização de pesos com distribuição normal pequena
-
-### `LayerNorm` (domain/layer_norm.py)
-
-Normalização de camadas que padroniza as ativações:
-
-```
-LayerNorm(x) = (x - mean(x)) / √(variance(x) + epsilon)
-```
-
-**Características:**
-- Normalização por features (aplicada em `axis=-1`)
-- Parâmetro epsilon configurável para estabilidade numérica
-- Validação de entrada para valores positivos
-
-### `EmbeddingTable` (infrastructure/embeddings.py)
-
-Gerencia as representações vetoriais dos tokens, transformando IDs em embeddings densos.
-
-### `Vocabulary` (domain/vocabulary.py)
-
-Gerencia o mapeamento entre tokens e índices, facilitando a codificação/decodificação de frases.
-
-## 🔄 Fluxo de Execução
-
-1. **Tokenização**: Frase é convertida em IDs usando `Vocabulary`
-2. **Embedding**: IDs são transformados em vetores densos via `EmbeddingTable`
-3. **Atenção**: Vetores passam pela `ScaledDotProductAttention`
-4. **Residual + Normalização**: Resultado é somado à entrada original e normalizado com `LayerNorm`
-
-```
-Entrada Textual → Tokenização → Embeddings → Atenção → Add & Norm → Saída
-```
-
-## � Exemplo de Uso
-
-```python
-from domain.vocabulary import Vocabulary
-from infrastructure.embeddings import EmbeddingTable
-from domain.attention import ScaledDotProductAttention
-from domain.layer_norm import LayerNorm
-
-# Configurar vocabulário
-token_map = {"o": 0, "banco": 1, "bloqueou": 2, "cartao": 3}
-vocab = Vocabulary(token_map)
-
-# Instanciar componentes
-d_model = 64
-embeddings = EmbeddingTable(vocab_size=vocab.size, d_model=d_model)
-attention = ScaledDotProductAttention(d_model=d_model)
-layer_norm = LayerNorm()
-
-# Processar frase
-phrase = "o banco bloqueou cartao"
-token_ids = vocab.encode(phrase)
-X = embeddings.get_embeddings(token_ids)
-
-# Forward pass
-X_att = attention.forward(X)
-X_residual = X + X_att
-X_normalized = layer_norm.forward(X_residual)
-
-print(f"Shape final: {X_normalized.shape}")  # (4, 64)
-```
-
-## �📝 Nota de Integridade e Créditos
-
-Desenvolvido para a disciplina de **Tópicos em Inteligência Artificial**.
-
-Ferramentas de IA foram consultadas exclusivamente para:
+Ferramentas de Inteligência Artificial foram consultadas **exclusivamente** como assistentes para:
 - Revisão de arquitetura de software
-- Boas práticas de código Python
-- Revisão de README
+- Boas práticas de estruturação de código Python (*Clean Code*)
+- Revisão do README
+- Revisões de Texto
 
-A lógica matemática e a implementação são autorais.
+A **autoria e a implementação lógica/matemática originais** foram mantidas conforme exigido no roteiro do laboratório.
 
-**Autor**: Lucas Souza
+---
+
+**Desenvolvido para iCEV - 2026.1**
+
+**Author: lucasrbsouza**
